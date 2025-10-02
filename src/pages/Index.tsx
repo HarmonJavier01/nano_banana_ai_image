@@ -6,6 +6,9 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Copy, Check, Sparkles, ImageIcon, Download, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { ArrowUp } from "lucide-react";
+import { useEffect } from "react";
+
 
 interface PromptData {
   title: string;
@@ -18,7 +21,7 @@ const Index = () => {
   const [industry, setIndustry] = useState("");
   const [productName, setProductName] = useState("Nano Banana");
   const [toneStyle, setToneStyle] = useState("");
-  const [customPrompt, setCustomPrompt] = useState(""); // New state for input text prompt
+  const [customPrompt, setCustomPrompt] = useState(""); 
   const [copied, setCopied] = useState(false);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [loadingImage, setLoadingImage] = useState(false);
@@ -71,21 +74,21 @@ const Index = () => {
 
     const adTypeData = adTypes[adType];
     const industryName = industries[industry];
-
+    // Detailed descriptions for each industry and tone/style
     const industryDescriptions: Record<string, string> = {
       "digital-agencies": "Modern clean layout with professional branding, fresh banana theme elements, and subtle futuristic digital agency vibes. High-quality, optimized for social feed engagement.",
       "social-media": "Bright colors, banana-inspired elements, engaging text placement, perfect for marketing campaigns and social virality.",
       "seo-sem": "Include simple graphics, SEO-focused visual cues, and clear product branding with attention to conversion optimization.",
       "content-marketing": "Storytelling elements with compelling narrative visuals, optimized for audience engagement and shareability."
     };
-
+    //  Detailed descriptions for each tone/style
     const toneDescriptions: Record<string, string> = {
       "minimalist": "Clean, uncluttered design with plenty of white space and simple geometric shapes.",
       "vibrant": "Bold, eye-catching colors with dynamic energy and high contrast elements.",
       "professional": "Sophisticated business aesthetic with refined typography and polished visuals.",
       "playful": "Fun, creative approach with whimsical elements and approachable design."
     };
-
+    // Descriptions for each ad type
     const formatDescriptions: Record<string, string> = {
       "image-ad": "Create a bold and eye-catching 1:1 square image ad",
       "banner-ad": "Design a wide 16:1 banner ad showcasing creativity and innovation",
@@ -93,10 +96,10 @@ const Index = () => {
       "social-square": "Create a visually engaging 1:1 social media square ad",
       "social-story": "Design a full-screen 9:16 vertical story ad"
     };
-
+    // Final prompt construction
     return `${productName} ${adTypeData.title} (${adTypeData.aspectRatio}) for ${industryName}:\n\n"${formatDescriptions[adType]} for ${productName}. ${toneDescriptions[toneStyle]} ${industryDescriptions[industry]}"`;
   };
-
+  // Copy to clipboard function
   const handleCopy = async () => {
     const prompt = generatePrompt();
     if (!prompt) return;
@@ -110,7 +113,7 @@ const Index = () => {
 
     setTimeout(() => setCopied(false), 2000);
   };
-
+  // Image generation function
   const handleGenerateImage = async () => {
     // Use customPrompt if provided, else fallback to generated prompt
     const prompt = customPrompt.trim() || generatePrompt();
@@ -123,7 +126,7 @@ const Index = () => {
       // Use the full prompt directly, no splitting
       const cleanPrompt = prompt.replace(/"/g, '');
       const newImageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(cleanPrompt)}?width=1024&height=1024&nologo=true&seed=${Date.now()}`;
-
+      // Preload image to handle loading state and errors
       const img = new Image();
       img.onload = () => {
         setImageUrl(newImageUrl);
@@ -152,35 +155,14 @@ const Index = () => {
     }
   };
   
-//   //Download function
-//   const handleDownload = () => {
-//   if (!imageUrl) return;
 
-//   // 1. Trigger file download
-//   const link = document.createElement("a");
-//   link.href = imageUrl;
-//   link.setAttribute(
-//     "download",
-//     `${productName.replace(/\s+/g, "-").toLowerCase()}-${Date.now()}.png`
-//   );
-//   document.body.appendChild(link);
-//   link.click();
-//   document.body.removeChild(link);
-
-//   // 2. Open the image in a new tab
-//   window.open(imageUrl, "_blank");
-
-//   toast({
-//     title: "Download started!",
-//     description: "Your image is being downloaded and opened in a new tab.",
-//   });
-// };
+//donwload function with error handling and CORS consideration
 const [downloading, setDownloading] = useState(false);
 
 const handleDownload = async () => {
   if (!imageUrl) return;
   setDownloading(true);
-
+  // Create a safe filename
   const filename = `${productName.replace(/\s+/g, '-').toLowerCase()}-${Date.now()}.png`;
 
   try {
@@ -237,10 +219,32 @@ const handleDownload = async () => {
   }
 };
 
+// Inside your component:
+const [showScrollTop, setShowScrollTop] = useState(false);
 
+useEffect(() => {
+  const handleScroll = () => {
+    if (window.scrollY > 200) {
+      setShowScrollTop(true);
+    } else {
+      setShowScrollTop(false);
+    }
+  };
+
+  window.addEventListener("scroll", handleScroll);
+  return () => window.removeEventListener("scroll", handleScroll);
+}, []);
+
+const scrollToTop = () => {
+  window.scrollTo({ top: 0, behavior: "smooth" });
+};
+
+
+
+  // Check if all form fields are filled
 
   const isFormComplete = adType && industry && productName && toneStyle;
-
+  // Main component render
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-background">
       <div className="container mx-auto px-4 py-12 md:py-20">
@@ -251,7 +255,7 @@ const handleDownload = async () => {
               AI Content Generator
             </div>
             <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent">
-              🍌 Nano Banana
+              🍌 Nano Banana 
             </h1>
             <p className="text-xl md:text-2xl font-semibold text-foreground">
               Content Prompt Generator
@@ -260,7 +264,7 @@ const handleDownload = async () => {
               Generate professional AI prompts for your marketing content in seconds
             </p>
           </div>
-
+        
           <Card className="mb-6 shadow-[var(--shadow-soft)] border-2 hover:shadow-[var(--shadow-glow)] transition-[var(--transition-smooth)]">
             <CardHeader>
               <CardTitle className="text-2xl">Generate Your Prompt</CardTitle>
@@ -307,6 +311,7 @@ const handleDownload = async () => {
                 <Input
                   id="product-name"
                   value={productName}
+                  readOnly={true} // Make this field read-only
                   onChange={(e) => setProductName(e.target.value)}
                   placeholder="e.g., Nano Banana"
                   className="h-12 text-base shadow-sm hover:border-primary transition-[var(--transition-smooth)]"
@@ -395,10 +400,11 @@ const handleDownload = async () => {
                   >
                     Regenerate
                   </Button>
+                  
                   <Button onClick={handleDownload} disabled={!imageUrl || downloading}>
-  {downloading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4 mr-2" />}
-  {downloading ? 'Downloading...' : 'Download'}
-</Button>
+                  {downloading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4 mr-2" />}
+                  {downloading ? 'Downloading...' : 'Download'}
+                  </Button>
 
                 </div>
               </div>
@@ -410,15 +416,32 @@ const handleDownload = async () => {
 
           {!isFormComplete && (
             <div className="text-center py-16 animate-in fade-in-50 duration-500">
-              <div className="text-6xl mb-4">🎨</div>
+              <div className="text-6xl mb-4">🍌</div>
               <p className="text-muted-foreground text-lg">
                 Fill in all fields above to generate your customized AI prompt
               </p>
+             
             </div>
           )}
         </div>
       </div>
+      <footer >
+      <div className="text-center py-4 text-sm text-muted-foreground">
+        &copy; {new Date().getFullYear()} Nano Banana Creative Studio. All rights reserved.
+      </div>
+      </footer>
+    
+      {showScrollTop && (
+  <Button
+    onClick={scrollToTop}
+    className="fixed bottom-6 right-6 rounded-full shadow-lg p-3 bg-primary text-white hover:bg-primary/90"
+  >
+    <ArrowUp className="w-5 h-5" />
+  </Button>
+)}
+
     </div>
+    
   );
 };
 
