@@ -151,21 +151,93 @@ const Index = () => {
       });
     }
   };
+  
+//   //Download function
+//   const handleDownload = () => {
+//   if (!imageUrl) return;
 
-  const handleDownload = () => {
-    if (!imageUrl) return;
-    const link = document.createElement("a");
-    link.href = imageUrl;
-    link.download = `${productName.replace(/\s+/g, '-').toLowerCase()}-${Date.now()}.png`;
+//   // 1. Trigger file download
+//   const link = document.createElement("a");
+//   link.href = imageUrl;
+//   link.setAttribute(
+//     "download",
+//     `${productName.replace(/\s+/g, "-").toLowerCase()}-${Date.now()}.png`
+//   );
+//   document.body.appendChild(link);
+//   link.click();
+//   document.body.removeChild(link);
+
+//   // 2. Open the image in a new tab
+//   window.open(imageUrl, "_blank");
+
+//   toast({
+//     title: "Download started!",
+//     description: "Your image is being downloaded and opened in a new tab.",
+//   });
+// };
+const [downloading, setDownloading] = useState(false);
+
+const handleDownload = async () => {
+  if (!imageUrl) return;
+  setDownloading(true);
+
+  const filename = `${productName.replace(/\s+/g, '-').toLowerCase()}-${Date.now()}.png`;
+
+  try {
+    // If it's already a data: or blob: url, just use it directly
+    if (imageUrl.startsWith('data:') || imageUrl.startsWith('blob:')) {
+      const link = document.createElement('a');
+      link.href = imageUrl;
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      toast({ title: 'Downloaded!', description: 'Saved from data/blob URL.' });
+      setDownloading(false);
+      return;
+    }
+
+    // Try to fetch the image (CORS must allow this)
+    const res = await fetch(imageUrl, { mode: 'cors' });
+    if (!res.ok) throw new Error(`Failed to fetch image: ${res.status}`);
+
+    const blob = await res.blob();
+    const blobUrl = URL.createObjectURL(blob);
+
+    // Create anchor pointing to blob and force download
+    const link = document.createElement('a');
+    link.href = blobUrl;
+    link.setAttribute('download', filename);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
 
+    // Revoke blob URL to free memory
+    URL.revokeObjectURL(blobUrl);
+
+    // Also open the original image in a new tab for preview
+    window.open(imageUrl, '_blank');
+
+    toast({ title: 'Download ready!', description: 'Saved to your device and opened in a new tab.' });
+
+  } catch (err) {
+    console.error('Download failed:', err);
+
+    // Fallback: open the image in a new tab and instruct user to Save As...
+    window.open(imageUrl, '_blank');
+
     toast({
-      title: "Download started!",
-      description: "Your image is being downloaded.",
+      title: 'Couldn’t auto-download',
+      description: 'Opened image in a new tab. Right-click → "Save as…" to save it.',
+      variant: 'destructive',
     });
-  };
+  } finally {
+    setDownloading(false);
+  }
+};
+
+
 
   const isFormComplete = adType && industry && productName && toneStyle;
 
@@ -261,48 +333,7 @@ const Index = () => {
 
           {isFormComplete && (
             <>
-              {/* <Card className="shadow-[var(--shadow-glow)] border-2 border-primary/20 animate-in fade-in-50 slide-in-from-bottom-4 duration-500 mb-8">
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="space-y-2">
-                      <CardTitle className="text-2xl flex items-center gap-2">
-                        <span className="text-3xl">✨</span>
-                        {adTypes[adType].title}
-                      </CardTitle>
-                      <CardDescription className="text-base">
-                        {adTypes[adType].description}
-                      </CardDescription>
-                    </div>
-                    <span className="px-3 py-1 bg-secondary/20 text-secondary-foreground text-sm font-semibold rounded-full">
-                      {adTypes[adType].aspectRatio}
-                    </span>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="bg-muted/50 rounded-lg p-6 border-2 border-dashed border-border">
-                    <p className="text-foreground font-mono text-sm md:text-base leading-relaxed whitespace-pre-line">
-                      {generatePrompt()}
-                    </p>
-                  </div>
-                  <Button
-                    onClick={handleCopy}
-                    className="w-full h-12 text-base font-semibold"
-                    size="lg"
-                  >
-                    {copied ? (
-                      <>
-                        <Check className="w-5 h-5 mr-2" />
-                        Copied!
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="w-5 h-5 mr-2" />
-                        Copy Prompt
-                      </>
-                    )}
-                  </Button>
-                </CardContent>
-              </Card> */}
+              {}
 
               <Card className="shadow-md border-2 border-dashed border-primary/30 animate-in fade-in-50 slide-in-from-bottom-4 duration-700">
                 <CardHeader>
@@ -364,10 +395,11 @@ const Index = () => {
                   >
                     Regenerate
                   </Button>
-                  <Button onClick={handleDownload} className="flex-1">
-                    <Download className="w-4 h-4 mr-2" />
-                    Download
-                  </Button>
+                  <Button onClick={handleDownload} disabled={!imageUrl || downloading}>
+  {downloading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4 mr-2" />}
+  {downloading ? 'Downloading...' : 'Download'}
+</Button>
+
                 </div>
               </div>
             )}
