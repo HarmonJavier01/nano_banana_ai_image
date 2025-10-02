@@ -9,7 +9,6 @@ A professional AI-powered prompt generator and image creator for marketing conte
 - **Industry-Specific Templates** - Pre-configured prompts for different marketing industries
 - **Editable Prompts** - Customize generated prompts before creating images
 - **AI Image Generation** - Instant image creation using Pollinations.ai
-- **One-Click Copy** - Easy clipboard integration for prompt copying
 - **Image Download** - Save generated images directly to your device
 - **Responsive Design** - Works seamlessly on desktop and mobile devices
 
@@ -189,7 +188,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## 👥 Authors
 
-- Your Name - _Initial work_
+- Harmon Javier - Content Creation Nano Banana Ai
 
 ## 🙏 Acknowledgments
 
