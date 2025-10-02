@@ -427,7 +427,7 @@ const scrollToTop = () => {
       </div>
       <footer >
       <div className="text-center py-4 text-sm text-muted-foreground">
-        &copy; {new Date().getFullYear()} Nano Banana Creative Studio. All rights reserved.
+        &copy; {new Date().getFullYear()} 🍌<>HJ</> Nano Banana Creative Studio. All rights reserved.
       </div>
       </footer>
     
